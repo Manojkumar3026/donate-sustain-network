@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import HotelRegister from "./pages/hotel-register";
+import NgoRegister from "./pages/ngo-register";
 import HotelDashboard from "./pages/hotel-dashboard";
 import NgoDashboard from "./pages/ngo-dashboard";
 import NotFound from "./pages/NotFound";
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/hotel-register" element={<HotelRegister />} />
+          <Route path="/ngo-register" element={<NgoRegister />} />
           <Route path="/hotel-dashboard" element={<HotelDashboard />} />
           <Route path="/ngo-dashboard" element={<NgoDashboard />} />
           <Route path="/about" element={<About />} />

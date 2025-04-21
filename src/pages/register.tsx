@@ -1,21 +1,28 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
 
 const Register = () => {
   const [userType, setUserType] = useState<"hotel" | "ngo">("hotel");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you'd handle form submission here
-    console.log(`${userType} registration submitted`);
+  const handleContinue = () => {
+    if (userType === "hotel") {
+      navigate("/hotel-register");
+    } else {
+      navigate("/ngo-register");
+    }
+    
+    toast({
+      title: `Continuing to ${userType} registration`,
+      description: "Please complete your registration details",
+    });
   };
 
   return (
@@ -40,70 +47,17 @@ const Register = () => {
                     Register your hotel to donate excess food and reduce waste while making a positive impact.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="hotel-name">Hotel Name</Label>
-                        <Input id="hotel-name" placeholder="Enter your hotel's name" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="contact-name">Contact Person</Label>
-                          <Input id="contact-name" placeholder="Full name" />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input id="phone" placeholder="Phone number" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input id="email" type="email" placeholder="Email address" />
-                      </div>
-                      <div>
-                        <Label htmlFor="password">Password</Label>
-                        <Input id="password" type="password" placeholder="Create a password" />
-                      </div>
-                      <div>
-                        <Label htmlFor="address">Hotel Address</Label>
-                        <Input id="address" placeholder="Street address" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="City" />
-                        </div>
-                        <div>
-                          <Label htmlFor="postal-code">Postal Code</Label>
-                          <Input id="postal-code" placeholder="Postal code" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="business-license">Business License Number</Label>
-                        <Input id="business-license" placeholder="For verification purposes" />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <Input id="terms" type="checkbox" className="w-4 h-4" />
-                        <Label htmlFor="terms" className="ml-2 text-sm">
-                          I agree to the terms and conditions
-                        </Label>
-                      </div>
-                      <div className="flex items-center">
-                        <Input id="updates" type="checkbox" className="w-4 h-4" />
-                        <Label htmlFor="updates" className="ml-2 text-sm">
-                          Send me updates about donations and impact
-                        </Label>
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full">Register as Hotel</Button>
-                  </form>
+                <CardContent className="space-y-4">
+                  <p>
+                    Hotels play a crucial role in our food donation network. By registering, you'll be able to:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>Easily post information about available excess food</li>
+                    <li>Coordinate pickup times with verified NGOs</li>
+                    <li>Track your donation history and impact</li>
+                    <li>Receive tax deduction receipts for your donations</li>
+                  </ul>
+                  <Button onClick={handleContinue} className="w-full mt-4">Continue as Hotel</Button>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -116,74 +70,17 @@ const Register = () => {
                     Register your NGO to receive food donations and distribute them to those in need.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="ngo-name">Organization Name</Label>
-                        <Input id="ngo-name" placeholder="Enter your NGO's name" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="contact-name">Contact Person</Label>
-                          <Input id="contact-name" placeholder="Full name" />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input id="phone" placeholder="Phone number" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input id="email" type="email" placeholder="Email address" />
-                      </div>
-                      <div>
-                        <Label htmlFor="password">Password</Label>
-                        <Input id="password" type="password" placeholder="Create a password" />
-                      </div>
-                      <div>
-                        <Label htmlFor="address">Organization Address</Label>
-                        <Input id="address" placeholder="Street address" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="City" />
-                        </div>
-                        <div>
-                          <Label htmlFor="postal-code">Postal Code</Label>
-                          <Input id="postal-code" placeholder="Postal code" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="registration-number">Registration Number</Label>
-                        <Input id="registration-number" placeholder="For verification purposes" />
-                      </div>
-                      <div>
-                        <Label htmlFor="service-area">Service Area</Label>
-                        <Input id="service-area" placeholder="Areas you serve" />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <Input id="terms" type="checkbox" className="w-4 h-4" />
-                        <Label htmlFor="terms" className="ml-2 text-sm">
-                          I agree to the terms and conditions
-                        </Label>
-                      </div>
-                      <div className="flex items-center">
-                        <Input id="updates" type="checkbox" className="w-4 h-4" />
-                        <Label htmlFor="updates" className="ml-2 text-sm">
-                          Send me updates about available donations
-                        </Label>
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full">Register as NGO</Button>
-                  </form>
+                <CardContent className="space-y-4">
+                  <p>
+                    NGOs are essential partners in our mission to reduce food waste and hunger. By registering, you'll be able to:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>Get real-time notifications about available food donations</li>
+                    <li>Coordinate pickup times with hotel partners</li>
+                    <li>Track donation history and distribution records</li>
+                    <li>Share impact stories with donors and the community</li>
+                  </ul>
+                  <Button onClick={handleContinue} className="w-full mt-4">Continue as NGO</Button>
                 </CardContent>
               </Card>
             </TabsContent>
