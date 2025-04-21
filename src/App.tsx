@@ -10,6 +10,9 @@ import Register from "./pages/register";
 import HotelDashboard from "./pages/hotel-dashboard";
 import NgoDashboard from "./pages/ngo-dashboard";
 import NotFound from "./pages/NotFound";
+import About from "./pages/About";
+import HowItWorks from "./pages/HowItWorks";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/hotel-dashboard" element={<HotelDashboard />} />
           <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
