@@ -27,16 +27,7 @@ const HotelRegister = () => {
     setLoading(true);
     
     try {
-      // First check if user already exists
-      const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail(formData.email);
-      
-      if (existingUser) {
-        setFormError("An account with this email already exists. Please log in instead.");
-        setLoading(false);
-        return;
-      }
-
-      // Proceed with registration if user doesn't exist
+      // Proceed with registration directly - Supabase will handle existing users
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
