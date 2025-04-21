@@ -128,10 +128,34 @@ const HotelRegister = () => {
             city: formData.city,
             postal_code: formData.postalCode,
             business_license: formData.businessLicense,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           } as Database['public']['Tables']['profiles']['Insert']);
           
         if (profileError) {
-          setFormError("Error creating profile. Please contact support.");
+          console.error("Profile creation error:", profileError);
+          
+          // More descriptive error handling
+          if (profileError.code === "23505") { // Unique violation
+            setFormError("This account already exists. Please log in instead.");
+          } else if (profileError.code === "42P01") { // Undefined table
+            setFormError("System error: Unable to create profile (table not found). Please contact support.");
+          } else if (profileError.code === "23503") { // Foreign key violation
+            setFormError("System error: Unable to link profile to account. Please contact support.");
+          } else {
+            setFormError(`Error creating profile: ${profileError.message}. Please try again or contact support.`);
+          }
+          
+          // Try to clean up by deleting the auth user if profile creation failed
+          try {
+            if (authData.user) {
+              // We don't expose this directly to users - just attempt cleanup silently
+              await supabase.auth.admin.deleteUser(authData.user.id);
+            }
+          } catch (cleanupError) {
+            console.error("Failed to clean up user after profile creation error:", cleanupError);
+          }
+          
           throw profileError;
         }
         
