@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormError } from "@/components/form/form-error";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -31,17 +31,29 @@ const Login = () => {
       });
 
       if (authError) {
-        setError(authError.message);
+        console.error("Authentication error:", authError);
+        setError(authError.message || "Login failed. Please check your credentials.");
         toast({
           title: "Login Failed",
-          description: authError.message,
+          description: authError.message || "Please check your credentials and try again.",
           variant: "destructive"
         });
         return;
       }
       
-      if (authData.user) {
-        // Get the user profile to determine the organization type
+      if (!authData.user) {
+        setError("No user data returned. Please try again.");
+        return;
+      }
+      
+      // Success! Show a toast message
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+      
+      // Get the user profile to determine the organization type
+      try {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('organization_type')
@@ -51,18 +63,9 @@ const Login = () => {
         if (profileError) {
           console.error("Profile fetch error:", profileError);
           // Even if we can't get the profile, we can still log in the user
-          toast({
-            title: "Login Successful",
-            description: "Welcome back!",
-          });
           navigate('/'); // Default redirect
           return;
         }
-        
-        toast({
-          title: "Login Successful",
-          description: "Welcome back!",
-        });
         
         // Redirect based on organization type
         if (profileData && profileData.organization_type === 'hotel') {
@@ -72,6 +75,9 @@ const Login = () => {
         } else {
           navigate("/"); // Default redirect
         }
+      } catch (profileError) {
+        console.error("Profile fetch error:", profileError);
+        navigate('/'); // Default redirect
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -95,11 +101,7 @@ const Login = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {error && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+              {error && <FormError error={error} />}
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">

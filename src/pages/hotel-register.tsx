@@ -27,7 +27,7 @@ const HotelRegister = () => {
     setLoading(true);
     
     try {
-      // 1. Register the user with Supabase Auth
+      // 1. Register the user with Supabase Auth - Include organization data in metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -36,11 +36,15 @@ const HotelRegister = () => {
             organization_type: 'hotel',
             organization_name: formData.hotelName,
             contact_name: formData.contactName,
+            phone: formData.phone
           },
-        },
+          // Set emailRedirectTo to the login page
+          emailRedirectTo: `${window.location.origin}/login`,
+        }
       });
       
       if (authError) {
+        console.error("Auth error:", authError);
         if (authError.message.includes("rate_limit")) {
           setFormError("Too many registration attempts. Please try again later.");
         } else if (authError.message.includes("already")) {
@@ -51,7 +55,7 @@ const HotelRegister = () => {
         throw authError;
       }
       
-      if (authData.user) {
+      if (authData?.user) {
         // 2. Add the profile data
         const { error: profileError } = await supabase
           .from('profiles')
@@ -76,16 +80,12 @@ const HotelRegister = () => {
           if (profileError.code === "23505") { // Unique violation
             setFormError("This account already exists. Please log in instead.");
           } else if (profileError.code === "42501") { // Permission denied (RLS issue)
-            setFormError("Error creating profile: " + profileError.message + ". Please try again or contact support.");
-          } else if (profileError.code === "42P01") { // Undefined table
-            setFormError("System error: Unable to create profile (table not found). Please contact support.");
-          } else if (profileError.code === "23503") { // Foreign key violation
-            setFormError("System error: Unable to link profile to account. Please contact support.");
+            setFormError("Error creating profile due to permissions. Please contact support.");
           } else {
             setFormError(`Error creating profile: ${profileError.message}. Please try again or contact support.`);
           }
           
-          // Try to clean up by signing out if profile creation failed
+          // Try to clean up by deleting the auth user if profile creation failed
           try {
             await supabase.auth.signOut();
           } catch (cleanupError) {
@@ -95,13 +95,21 @@ const HotelRegister = () => {
           throw profileError;
         }
         
-        // Sign out the user after successful registration so they can login explicitly
-        await supabase.auth.signOut();
+        // Check if email confirmation is required
+        if (authData?.user?.identities?.[0]?.identity_data?.email_verified) {
+          toast({
+            title: "Registration successful!",
+            description: "Your hotel account has been created. You can now log in.",
+          });
+        } else {
+          toast({
+            title: "Registration successful!",
+            description: "Please check your email to verify your account before logging in.",
+          });
+        }
         
-        toast({
-          title: "Registration successful!",
-          description: "Your hotel account has been created. You can now log in.",
-        });
+        // Sign out the user after successful registration
+        await supabase.auth.signOut();
         
         navigate('/login');
       }
