@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/types/database.types";
 
 const HotelRegister = () => {
   const [formData, setFormData] = useState({
@@ -63,7 +64,7 @@ const HotelRegister = () => {
             city: formData.city,
             postal_code: formData.postalCode,
             business_license: formData.businessLicense,
-          });
+          } as Database['public']['Tables']['profiles']['Insert']);
           
         if (profileError) throw profileError;
         
