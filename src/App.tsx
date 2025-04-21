@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/login";
 import Register from "./pages/register";
@@ -18,27 +19,50 @@ import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
+// Protected route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/hotel-register" element={<HotelRegister />} />
-          <Route path="/ngo-register" element={<NgoRegister />} />
-          <Route path="/hotel-dashboard" element={<HotelDashboard />} />
-          <Route path="/ngo-dashboard" element={<NgoDashboard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/contact" element={<Contact />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/hotel-register" element={<HotelRegister />} />
+            <Route path="/ngo-register" element={<NgoRegister />} />
+            <Route path="/hotel-dashboard" element={
+              <ProtectedRoute>
+                <HotelDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/ngo-dashboard" element={
+              <ProtectedRoute>
+                <NgoDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/about" element={<About />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/contact" element={<Contact />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
