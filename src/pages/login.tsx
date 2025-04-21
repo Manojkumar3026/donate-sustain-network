@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
@@ -24,29 +23,50 @@ const Login = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Sign in with email and password
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) {
-        setError(error.message);
+      if (authError) {
+        setError(authError.message);
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: authError.message,
           variant: "destructive"
         });
-      } else {
+        return;
+      }
+      
+      if (authData.user) {
+        // Get the user profile to determine the organization type
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('organization_type')
+          .eq('id', authData.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
+          // Even if we can't get the profile, we can still log in the user
+          toast({
+            title: "Login Successful",
+            description: "Welcome back!",
+          });
+          navigate('/'); // Default redirect
+          return;
+        }
+        
         toast({
           title: "Login Successful",
           description: "Welcome back!",
         });
         
-        // Redirect based on user type
-        // In a real app, you would check user metadata or profiles to determine type
-        if (email.includes("hotel")) {
+        // Redirect based on organization type
+        if (profileData?.organization_type === 'hotel') {
           navigate("/hotel-dashboard");
-        } else if (email.includes("ngo")) {
+        } else if (profileData?.organization_type === 'ngo') {
           navigate("/ngo-dashboard");
         } else {
           navigate("/"); // Default redirect

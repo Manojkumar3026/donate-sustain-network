@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const NgoRegister = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,8 @@ const NgoRegister = () => {
     terms: false,
     updates: false,
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type, checked } = e.target;
@@ -34,14 +37,55 @@ const NgoRegister = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd handle form submission here
-    console.log("NGO registration submitted", formData);
-    toast({
-      title: "Registration submitted",
-      description: "Thank you for registering your NGO!",
-    });
+    setLoading(true);
+    
+    try {
+      // 1. Register the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      if (authError) throw authError;
+      
+      if (authData.user) {
+        // 2. Add the profile data
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user.id,
+            organization_type: 'ngo',
+            organization_name: formData.ngoName,
+            contact_name: formData.contactName,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            postal_code: formData.postalCode,
+            registration_number: formData.registrationNumber,
+            service_area: formData.serviceArea,
+          });
+          
+        if (profileError) throw profileError;
+        
+        toast({
+          title: "Registration successful!",
+          description: "Your NGO account has been created. You can now log in.",
+        });
+        
+        navigate('/login');
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: error.message || "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -204,7 +248,9 @@ const NgoRegister = () => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full">Register as NGO</Button>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Registering..." : "Register as NGO"}
+                </Button>
               </form>
             </CardContent>
           </Card>
