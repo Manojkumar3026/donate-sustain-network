@@ -1,8 +1,8 @@
-
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Info, BookOpen, Phone, Mail } from "lucide-react";
 
 const Index = () => {
   return (
@@ -154,6 +154,91 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Community Care Foundation</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-16 bg-gradient-to-b from-secondary/30 to-white border-t">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="flex items-center mb-6 gap-3">
+            <Info className="text-success" size={32} />
+            <h2 className="text-3xl font-bold">About DonateConnect</h2>
+          </div>
+          <p className="text-lg text-muted-foreground mb-4">
+            <b>DonateConnect</b> is a digital platform dedicated to reducing food waste and supporting communities in need. We bridge the gap between hotels with surplus food and verified NGOs that distribute resources to the less fortunate. Our network fosters efficient, transparent, and secure food donation—from sourcing to distribution—making a real impact in the fight against hunger and waste.
+          </p>
+          <p className="text-lg text-muted-foreground">
+            By connecting businesses and charities, we empower organizations to make giving effortless and create measurable positive change, meal by meal.
+          </p>
+        </div>
+      </section>
+
+      {/* Detailed How It Works Section */}
+      <section className="py-16 bg-white border-t">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="flex items-center mb-6 gap-3">
+            <BookOpen className="text-success" size={32} />
+            <h2 className="text-3xl font-bold">How DonateConnect Works</h2>
+          </div>
+          <div className="space-y-6 text-muted-foreground">
+            <div>
+              <b>1. Hotel and NGO Registration:</b>
+              <p>
+                Hotels and NGOs sign up and are securely verified by our team. Hotels provide details about their business, while NGOs share their service areas and capacity.
+              </p>
+            </div>
+            <div>
+              <b>2. Making & Managing Donations:</b>
+              <p>
+                Hotels list surplus food via our dashboard, specifying type, quantity, expiration, and pickup times. NGOs can browse all live donations to find what best matches their needs.
+              </p>
+            </div>
+            <div>
+              <b>3. Claiming & Scheduling:</b>
+              <p>
+                NGOs quickly claim available donations and schedule pickups, ensuring freshness and efficient delivery to communities.
+              </p>
+            </div>
+            <div>
+              <b>4. Pickup and Confirmation:</b>
+              <p>
+                Once collected, hotels confirm the handover; receipts and notifications are sent to both parties, creating a clear record and facilitating tax documentation.
+              </p>
+            </div>
+            <div>
+              <b>5. Distribution and Impact Tracking:</b>
+              <p>
+                NGOs track the final distribution and report back, so every donation is counted towards real progress—in meals served and waste prevented.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-16 bg-gradient-to-t from-success-light/10 to-white border-t">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="flex items-center mb-6 gap-3">
+            <Phone className="text-success" size={32} />
+            <h2 className="text-3xl font-bold">Contact DonateConnect</h2>
+          </div>
+          <div className="mb-4 text-lg text-muted-foreground">
+            We'd love to hear from you. Reach out for support, partnership, or general questions!
+          </div>
+          <div className="flex flex-col gap-4 text-base">
+            <div className="flex items-center gap-2">
+              <Mail className="text-success" size={20} />
+              <span>Email: <a href="mailto:info@donateconnect.org" className="underline text-success">info@donateconnect.org</a></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone className="text-success" size={20} />
+              <span>Phone: <a href="tel:+11234567890" className="underline text-success">+1 (123) 456-7890</a></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Info className="text-success" size={20} />
+              <span>Registered Office: 123 Giving Lane, New City, Country</span>
             </div>
           </div>
         </div>
