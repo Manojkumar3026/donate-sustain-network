@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/types/database.types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const NgoRegister = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +30,8 @@ const NgoRegister = () => {
     updates: false,
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,10 +40,62 @@ const NgoRegister = () => {
       ...formData,
       [id]: type === "checkbox" ? checked : value,
     });
+    
+    // Clear field-specific error when user starts typing
+    if (errors[id]) {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[id];
+        return newErrors;
+      });
+    }
+    
+    // Clear form error when user changes any field
+    if (formError) {
+      setFormError(null);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.ngoName.trim()) newErrors.ngoName = "Organization name is required";
+    if (!formData.contactName.trim()) newErrors.contactName = "Contact name is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+    
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    
+    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
+    if (!formData.postalCode.trim()) newErrors.postalCode = "Postal code is required";
+    if (!formData.registrationNumber.trim()) newErrors.registrationNumber = "Registration number is required";
+    if (!formData.serviceArea.trim()) newErrors.serviceArea = "Service area is required";
+    
+    if (!formData.terms) newErrors.terms = "You must agree to the terms";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Reset form errors
+    setFormError(null);
+    
+    // Validate form
+    if (!validateForm()) return;
+    
     setLoading(true);
     
     try {
@@ -48,7 +105,16 @@ const NgoRegister = () => {
         password: formData.password,
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message.includes("rate_limit")) {
+          setFormError("Too many registration attempts. Please try again later.");
+        } else if (authError.message.includes("already")) {
+          setFormError("An account with this email already exists.");
+        } else {
+          setFormError(authError.message || "Registration failed. Please try again.");
+        }
+        throw authError;
+      }
       
       if (authData.user) {
         // 2. Add the profile data
@@ -65,9 +131,12 @@ const NgoRegister = () => {
             postal_code: formData.postalCode,
             registration_number: formData.registrationNumber,
             service_area: formData.serviceArea,
-          });
+          } as Database['public']['Tables']['profiles']['Insert']);
           
-        if (profileError) throw profileError;
+        if (profileError) {
+          setFormError("Error creating profile. Please contact support.");
+          throw profileError;
+        }
         
         toast({
           title: "Registration successful!",
@@ -78,11 +147,15 @@ const NgoRegister = () => {
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast({
-        title: "Registration failed",
-        description: error.message || "There was an error creating your account. Please try again.",
-        variant: "destructive",
-      });
+      // Don't show toast if we've already set a specific form error
+      if (!formError) {
+        setFormError(error.message || "There was an error creating your account. Please try again.");
+        toast({
+          title: "Registration failed",
+          description: error.message || "There was an error creating your account. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -108,111 +181,148 @@ const NgoRegister = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {formError && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="ngoName">Organization Name</Label>
+                    <Label htmlFor="ngoName" className={errors.ngoName ? "text-destructive" : ""}>
+                      Organization Name {errors.ngoName && <span className="text-xs">({errors.ngoName})</span>}
+                    </Label>
                     <Input 
                       id="ngoName" 
                       placeholder="Enter your NGO's name"
                       value={formData.ngoName}
                       onChange={handleChange}
+                      className={errors.ngoName ? "border-destructive" : ""}
                       required 
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="contactName">Contact Person</Label>
+                      <Label htmlFor="contactName" className={errors.contactName ? "text-destructive" : ""}>
+                        Contact Person {errors.contactName && <span className="text-xs">({errors.contactName})</span>}
+                      </Label>
                       <Input 
                         id="contactName" 
                         placeholder="Full name"
                         value={formData.contactName}
                         onChange={handleChange}
+                        className={errors.contactName ? "border-destructive" : ""}
                         required 
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone" className={errors.phone ? "text-destructive" : ""}>
+                        Phone Number {errors.phone && <span className="text-xs">({errors.phone})</span>}
+                      </Label>
                       <Input 
                         id="phone" 
                         placeholder="Phone number"
                         value={formData.phone}
                         onChange={handleChange}
+                        className={errors.phone ? "border-destructive" : ""}
                         required 
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className={errors.email ? "text-destructive" : ""}>
+                      Email Address {errors.email && <span className="text-xs">({errors.email})</span>}
+                    </Label>
                     <Input 
                       id="email" 
                       type="email" 
                       placeholder="Email address"
                       value={formData.email}
                       onChange={handleChange}
+                      className={errors.email ? "border-destructive" : ""}
                       required 
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className={errors.password ? "text-destructive" : ""}>
+                      Password {errors.password && <span className="text-xs">({errors.password})</span>}
+                    </Label>
                     <Input 
                       id="password" 
                       type="password" 
                       placeholder="Create a password"
                       value={formData.password}
                       onChange={handleChange}
+                      className={errors.password ? "border-destructive" : ""}
                       required 
                     />
                   </div>
                   <div>
-                    <Label htmlFor="address">Organization Address</Label>
+                    <Label htmlFor="address" className={errors.address ? "text-destructive" : ""}>
+                      Organization Address {errors.address && <span className="text-xs">({errors.address})</span>}
+                    </Label>
                     <Input 
                       id="address" 
                       placeholder="Street address"
                       value={formData.address}
                       onChange={handleChange}
+                      className={errors.address ? "border-destructive" : ""}
                       required 
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">City</Label>
+                      <Label htmlFor="city" className={errors.city ? "text-destructive" : ""}>
+                        City {errors.city && <span className="text-xs">({errors.city})</span>}
+                      </Label>
                       <Input 
                         id="city" 
                         placeholder="City"
                         value={formData.city}
                         onChange={handleChange}
+                        className={errors.city ? "border-destructive" : ""}
                         required 
                       />
                     </div>
                     <div>
-                      <Label htmlFor="postalCode">Postal Code</Label>
+                      <Label htmlFor="postalCode" className={errors.postalCode ? "text-destructive" : ""}>
+                        Postal Code {errors.postalCode && <span className="text-xs">({errors.postalCode})</span>}
+                      </Label>
                       <Input 
                         id="postalCode" 
                         placeholder="Postal code"
                         value={formData.postalCode}
                         onChange={handleChange}
+                        className={errors.postalCode ? "border-destructive" : ""}
                         required 
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="registrationNumber">Registration Number</Label>
+                    <Label htmlFor="registrationNumber" className={errors.registrationNumber ? "text-destructive" : ""}>
+                      Registration Number {errors.registrationNumber && <span className="text-xs">({errors.registrationNumber})</span>}
+                    </Label>
                     <Input 
                       id="registrationNumber" 
                       placeholder="For verification purposes"
                       value={formData.registrationNumber}
                       onChange={handleChange}
+                      className={errors.registrationNumber ? "border-destructive" : ""}
                       required 
                     />
                   </div>
                   <div>
-                    <Label htmlFor="serviceArea">Service Area</Label>
+                    <Label htmlFor="serviceArea" className={errors.serviceArea ? "text-destructive" : ""}>
+                      Service Area {errors.serviceArea && <span className="text-xs">({errors.serviceArea})</span>}
+                    </Label>
                     <Input 
                       id="serviceArea" 
                       placeholder="Areas you serve"
                       value={formData.serviceArea}
                       onChange={handleChange}
+                      className={errors.serviceArea ? "border-destructive" : ""}
                       required 
                     />
                   </div>
@@ -225,13 +335,13 @@ const NgoRegister = () => {
                     <Input 
                       id="terms" 
                       type="checkbox" 
-                      className="w-4 h-4"
+                      className={`w-4 h-4 ${errors.terms ? "border-destructive" : ""}`}
                       checked={formData.terms}
                       onChange={handleChange}
                       required 
                     />
-                    <Label htmlFor="terms" className="ml-2 text-sm">
-                      I agree to the terms and conditions
+                    <Label htmlFor="terms" className={`ml-2 text-sm ${errors.terms ? "text-destructive" : ""}`}>
+                      I agree to the terms and conditions {errors.terms && <span className="text-xs">({errors.terms})</span>}
                     </Label>
                   </div>
                   <div className="flex items-center">
