@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
@@ -64,9 +65,9 @@ const Login = () => {
         });
         
         // Redirect based on organization type
-        if (profileData?.organization_type === 'hotel') {
+        if (profileData && profileData.organization_type === 'hotel') {
           navigate("/hotel-dashboard");
-        } else if (profileData?.organization_type === 'ngo') {
+        } else if (profileData && profileData.organization_type === 'ngo') {
           navigate("/ngo-dashboard");
         } else {
           navigate("/"); // Default redirect
