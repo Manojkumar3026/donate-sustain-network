@@ -101,6 +101,13 @@ const HotelRegister = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            organization_type: 'hotel',
+            organization_name: formData.hotelName,
+            contact_name: formData.contactName,
+          },
+        },
       });
       
       if (authError) {
@@ -118,7 +125,7 @@ const HotelRegister = () => {
         // 2. Add the profile data
         const { error: profileError } = await supabase
           .from('profiles')
-          .upsert({
+          .insert({
             id: authData.user.id,
             organization_type: 'hotel',
             organization_name: formData.hotelName,
@@ -138,6 +145,8 @@ const HotelRegister = () => {
           // More descriptive error handling
           if (profileError.code === "23505") { // Unique violation
             setFormError("This account already exists. Please log in instead.");
+          } else if (profileError.code === "42501") { // Permission denied (RLS issue)
+            setFormError("Error creating profile: " + profileError.message + ". Please try again or contact support.");
           } else if (profileError.code === "42P01") { // Undefined table
             setFormError("System error: Unable to create profile (table not found). Please contact support.");
           } else if (profileError.code === "23503") { // Foreign key violation
@@ -146,18 +155,18 @@ const HotelRegister = () => {
             setFormError(`Error creating profile: ${profileError.message}. Please try again or contact support.`);
           }
           
-          // Try to clean up by deleting the auth user if profile creation failed
+          // Try to clean up by signing out if profile creation failed
           try {
-            if (authData.user) {
-              // We don't expose this directly to users - just attempt cleanup silently
-              await supabase.auth.admin.deleteUser(authData.user.id);
-            }
+            await supabase.auth.signOut();
           } catch (cleanupError) {
-            console.error("Failed to clean up user after profile creation error:", cleanupError);
+            console.error("Failed to clean up after profile creation error:", cleanupError);
           }
           
           throw profileError;
         }
+        
+        // Sign out the user after successful registration so they can login explicitly
+        await supabase.auth.signOut();
         
         toast({
           title: "Registration successful!",
