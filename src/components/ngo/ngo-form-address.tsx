@@ -1,64 +1,57 @@
 
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import type { NgoFormData } from "@/lib/validation/ngo-form";
 
-interface NgoFormAddressProps {
-  formData: {
-    address: string;
-    city: string;
-    postalCode: string;
-  };
-  errors: Record<string, string>;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+export const NgoFormAddress = () => {
+  const { control } = useFormContext<NgoFormData>();
 
-export const NgoFormAddress = ({
-  formData,
-  errors,
-  handleChange,
-}: NgoFormAddressProps) => {
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="address" className={errors.address ? "text-destructive" : ""}>
-          Organization Address {errors.address && <span className="text-xs">({errors.address})</span>}
-        </Label>
-        <Input 
-          id="address" 
-          placeholder="Street address"
-          value={formData.address}
-          onChange={handleChange}
-          className={errors.address ? "border-destructive" : ""}
-          required 
-        />
-      </div>
+      <FormField
+        control={control}
+        name="address"
+        render={({ field }) => (
+          <FormItem>
+            <Label>Organization Address</Label>
+            <FormControl>
+              <Input placeholder="Street address" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="city" className={errors.city ? "text-destructive" : ""}>
-            City {errors.city && <span className="text-xs">({errors.city})</span>}
-          </Label>
-          <Input 
-            id="city" 
-            placeholder="City"
-            value={formData.city}
-            onChange={handleChange}
-            className={errors.city ? "border-destructive" : ""}
-            required 
-          />
-        </div>
-        <div>
-          <Label htmlFor="postalCode" className={errors.postalCode ? "text-destructive" : ""}>
-            Postal Code {errors.postalCode && <span className="text-xs">({errors.postalCode})</span>}
-          </Label>
-          <Input 
-            id="postalCode" 
-            placeholder="Postal code"
-            value={formData.postalCode}
-            onChange={handleChange}
-            className={errors.postalCode ? "border-destructive" : ""}
-            required 
-          />
-        </div>
+        <FormField
+          control={control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <Label>City</Label>
+              <FormControl>
+                <Input placeholder="City" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name="postalCode"
+          render={({ field }) => (
+            <FormItem>
+              <Label>Postal Code</Label>
+              <FormControl>
+                <Input placeholder="Postal code" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

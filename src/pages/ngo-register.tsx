@@ -5,6 +5,7 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Form } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormError } from "@/components/form/form-error";
@@ -13,47 +14,31 @@ import { NgoFormCredentials } from "@/components/ngo/ngo-form-credentials";
 import { NgoFormAddress } from "@/components/ngo/ngo-form-address";
 import { NgoFormAdditionalInfo } from "@/components/ngo/ngo-form-additional-info";
 import { useNgoForm } from "@/hooks/use-ngo-form";
+import type { NgoFormData } from "@/lib/validation/ngo-form";
 
 const NgoRegister = () => {
   const navigate = useNavigate();
-  const {
-    formData,
-    errors,
-    formError,
-    loading,
-    handleChange,
-    setFormError,
-    setLoading,
-    validateForm,
-  } = useNgoForm();
+  const form = useNgoForm();
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Reset form errors
+  const onSubmit = async (data: NgoFormData) => {
     setFormError(null);
     
-    // Validate form
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    
     try {
-      // Register the user with Supabase Auth with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
         options: {
           data: {
             organization_type: 'ngo',
-            organization_name: formData.ngoName,
-            contact_name: formData.contactName,
-            phone: formData.phone,
-            address: formData.address,
-            city: formData.city,
-            postal_code: formData.postalCode,
-            registration_number: formData.registrationNumber,
-            service_area: formData.serviceArea,
+            organization_name: data.ngoName,
+            contact_name: data.contactName,
+            phone: data.phone,
+            address: data.address,
+            city: data.city,
+            postal_code: data.postalCode,
+            registration_number: data.registrationNumber,
+            service_area: data.serviceArea,
           }
         }
       });
@@ -88,8 +73,6 @@ const NgoRegister = () => {
         description: error.message || "There was an error creating your account. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -115,37 +98,23 @@ const NgoRegister = () => {
             <CardContent>
               {formError && <FormError error={formError} />}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <NgoFormBasicInfo 
-                  formData={formData}
-                  errors={errors}
-                  handleChange={handleChange}
-                />
-                
-                <NgoFormCredentials 
-                  formData={formData}
-                  errors={errors}
-                  handleChange={handleChange}
-                />
-                
-                <NgoFormAddress 
-                  formData={formData}
-                  errors={errors}
-                  handleChange={handleChange}
-                />
-                
-                <Separator />
-                
-                <NgoFormAdditionalInfo 
-                  formData={formData}
-                  errors={errors}
-                  handleChange={handleChange}
-                />
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <NgoFormBasicInfo />
+                  <NgoFormCredentials />
+                  <NgoFormAddress />
+                  <Separator />
+                  <NgoFormAdditionalInfo />
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Registering..." : "Register as NGO"}
-                </Button>
-              </form>
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? "Registering..." : "Register as NGO"}
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
 

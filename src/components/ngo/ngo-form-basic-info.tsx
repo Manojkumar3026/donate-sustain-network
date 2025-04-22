@@ -1,65 +1,57 @@
 
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormError } from "@/components/form/form-error";
+import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import type { NgoFormData } from "@/lib/validation/ngo-form";
 
-interface NgoFormBasicInfoProps {
-  formData: {
-    ngoName: string;
-    contactName: string;
-    phone: string;
-  };
-  errors: Record<string, string>;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+export const NgoFormBasicInfo = () => {
+  const { control } = useFormContext<NgoFormData>();
 
-export const NgoFormBasicInfo = ({
-  formData,
-  errors,
-  handleChange,
-}: NgoFormBasicInfoProps) => {
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="ngoName" className={errors.ngoName ? "text-destructive" : ""}>
-          Organization Name {errors.ngoName && <span className="text-xs">({errors.ngoName})</span>}
-        </Label>
-        <Input 
-          id="ngoName" 
-          placeholder="Enter your NGO's name"
-          value={formData.ngoName}
-          onChange={handleChange}
-          className={errors.ngoName ? "border-destructive" : ""}
-          required 
-        />
-      </div>
+      <FormField
+        control={control}
+        name="ngoName"
+        render={({ field }) => (
+          <FormItem>
+            <Label>Organization Name</Label>
+            <FormControl>
+              <Input placeholder="Enter your NGO's name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="contactName" className={errors.contactName ? "text-destructive" : ""}>
-            Contact Person {errors.contactName && <span className="text-xs">({errors.contactName})</span>}
-          </Label>
-          <Input 
-            id="contactName" 
-            placeholder="Full name"
-            value={formData.contactName}
-            onChange={handleChange}
-            className={errors.contactName ? "border-destructive" : ""}
-            required 
-          />
-        </div>
-        <div>
-          <Label htmlFor="phone" className={errors.phone ? "text-destructive" : ""}>
-            Phone Number {errors.phone && <span className="text-xs">({errors.phone})</span>}
-          </Label>
-          <Input 
-            id="phone" 
-            placeholder="Phone number"
-            value={formData.phone}
-            onChange={handleChange}
-            className={errors.phone ? "border-destructive" : ""}
-            required 
-          />
-        </div>
+        <FormField
+          control={control}
+          name="contactName"
+          render={({ field }) => (
+            <FormItem>
+              <Label>Contact Person</Label>
+              <FormControl>
+                <Input placeholder="Full name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <Label>Phone Number</Label>
+              <FormControl>
+                <Input placeholder="Phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );
