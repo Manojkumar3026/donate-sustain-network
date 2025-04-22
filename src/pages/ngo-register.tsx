@@ -10,9 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/types/database.types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { FormError } from "@/components/form/form-error";
 
 const NgoRegister = () => {
   const [formData, setFormData] = useState({
@@ -99,10 +97,23 @@ const NgoRegister = () => {
     setLoading(true);
     
     try {
-      // 1. Register the user with Supabase Auth
+      // Register the user with Supabase Auth with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            organization_type: 'ngo',
+            organization_name: formData.ngoName,
+            contact_name: formData.contactName,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            postal_code: formData.postalCode,
+            registration_number: formData.registrationNumber,
+            service_area: formData.serviceArea,
+          }
+        }
       });
       
       if (authError) {
@@ -113,73 +124,28 @@ const NgoRegister = () => {
         } else {
           setFormError(authError.message || "Registration failed. Please try again.");
         }
-        throw authError;
+        console.error("Authentication error:", authError);
+        return;
       }
       
       if (authData.user) {
-        // 2. Add the profile data
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            organization_type: 'ngo',
-            organization_name: formData.ngoName,
-            contact_name: formData.contactName,
-            phone: formData.phone,
-            address: formData.address,
-            city: formData.city,
-            postal_code: formData.postalCode,
-            registration_number: formData.registrationNumber,
-            service_area: formData.serviceArea,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          } as Database['public']['Tables']['profiles']['Insert']);
-          
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          
-          // More descriptive error handling
-          if (profileError.code === "23505") { // Unique violation
-            setFormError("This account already exists. Please log in instead.");
-          } else if (profileError.code === "42P01") { // Undefined table
-            setFormError("System error: Unable to create profile (table not found). Please contact support.");
-          } else if (profileError.code === "23503") { // Foreign key violation
-            setFormError("System error: Unable to link profile to account. Please contact support.");
-          } else {
-            setFormError(`Error creating profile: ${profileError.message}. Please try again or contact support.`);
-          }
-          
-          // Try to clean up by deleting the auth user if profile creation failed
-          try {
-            if (authData.user) {
-              // We don't expose this directly to users - just attempt cleanup silently
-              await supabase.auth.admin.deleteUser(authData.user.id);
-            }
-          } catch (cleanupError) {
-            console.error("Failed to clean up user after profile creation error:", cleanupError);
-          }
-          
-          throw profileError;
-        }
-        
         toast({
           title: "Registration successful!",
           description: "Your NGO account has been created. You can now log in.",
         });
         
         navigate('/login');
+      } else {
+        setFormError("Something went wrong during registration. Please try again.");
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      // Don't show toast if we've already set a specific form error
-      if (!formError) {
-        setFormError(error.message || "There was an error creating your account. Please try again.");
-        toast({
-          title: "Registration failed",
-          description: error.message || "There was an error creating your account. Please try again.",
-          variant: "destructive",
-        });
-      }
+      setFormError(error.message || "There was an error creating your account. Please try again.");
+      toast({
+        title: "Registration failed",
+        description: error.message || "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -205,12 +171,7 @@ const NgoRegister = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {formError && (
-                <Alert variant="destructive" className="mb-6">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{formError}</AlertDescription>
-                </Alert>
-              )}
+              {formError && <FormError error={formError} />}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
