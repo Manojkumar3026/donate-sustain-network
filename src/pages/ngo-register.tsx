@@ -1,16 +1,17 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormError } from "@/components/form/form-error";
+import { NgoFormBasicInfo } from "@/components/ngo/ngo-form-basic-info";
+import { NgoFormCredentials } from "@/components/ngo/ngo-form-credentials";
+import { NgoFormAddress } from "@/components/ngo/ngo-form-address";
+import { NgoFormAdditionalInfo } from "@/components/ngo/ngo-form-additional-info";
 
 const NgoRegister = () => {
   const [formData, setFormData] = useState({
@@ -174,174 +175,31 @@ const NgoRegister = () => {
               {formError && <FormError error={formError} />}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="ngoName" className={errors.ngoName ? "text-destructive" : ""}>
-                      Organization Name {errors.ngoName && <span className="text-xs">({errors.ngoName})</span>}
-                    </Label>
-                    <Input 
-                      id="ngoName" 
-                      placeholder="Enter your NGO's name"
-                      value={formData.ngoName}
-                      onChange={handleChange}
-                      className={errors.ngoName ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="contactName" className={errors.contactName ? "text-destructive" : ""}>
-                        Contact Person {errors.contactName && <span className="text-xs">({errors.contactName})</span>}
-                      </Label>
-                      <Input 
-                        id="contactName" 
-                        placeholder="Full name"
-                        value={formData.contactName}
-                        onChange={handleChange}
-                        className={errors.contactName ? "border-destructive" : ""}
-                        required 
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className={errors.phone ? "text-destructive" : ""}>
-                        Phone Number {errors.phone && <span className="text-xs">({errors.phone})</span>}
-                      </Label>
-                      <Input 
-                        id="phone" 
-                        placeholder="Phone number"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className={errors.phone ? "border-destructive" : ""}
-                        required 
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className={errors.email ? "text-destructive" : ""}>
-                      Email Address {errors.email && <span className="text-xs">({errors.email})</span>}
-                    </Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className={errors.email ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password" className={errors.password ? "text-destructive" : ""}>
-                      Password {errors.password && <span className="text-xs">({errors.password})</span>}
-                    </Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="Create a password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={errors.password ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="address" className={errors.address ? "text-destructive" : ""}>
-                      Organization Address {errors.address && <span className="text-xs">({errors.address})</span>}
-                    </Label>
-                    <Input 
-                      id="address" 
-                      placeholder="Street address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className={errors.address ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city" className={errors.city ? "text-destructive" : ""}>
-                        City {errors.city && <span className="text-xs">({errors.city})</span>}
-                      </Label>
-                      <Input 
-                        id="city" 
-                        placeholder="City"
-                        value={formData.city}
-                        onChange={handleChange}
-                        className={errors.city ? "border-destructive" : ""}
-                        required 
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="postalCode" className={errors.postalCode ? "text-destructive" : ""}>
-                        Postal Code {errors.postalCode && <span className="text-xs">({errors.postalCode})</span>}
-                      </Label>
-                      <Input 
-                        id="postalCode" 
-                        placeholder="Postal code"
-                        value={formData.postalCode}
-                        onChange={handleChange}
-                        className={errors.postalCode ? "border-destructive" : ""}
-                        required 
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="registrationNumber" className={errors.registrationNumber ? "text-destructive" : ""}>
-                      Registration Number {errors.registrationNumber && <span className="text-xs">({errors.registrationNumber})</span>}
-                    </Label>
-                    <Input 
-                      id="registrationNumber" 
-                      placeholder="For verification purposes"
-                      value={formData.registrationNumber}
-                      onChange={handleChange}
-                      className={errors.registrationNumber ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="serviceArea" className={errors.serviceArea ? "text-destructive" : ""}>
-                      Service Area {errors.serviceArea && <span className="text-xs">({errors.serviceArea})</span>}
-                    </Label>
-                    <Input 
-                      id="serviceArea" 
-                      placeholder="Areas you serve"
-                      value={formData.serviceArea}
-                      onChange={handleChange}
-                      className={errors.serviceArea ? "border-destructive" : ""}
-                      required 
-                    />
-                  </div>
-                </div>
-
+                <NgoFormBasicInfo 
+                  formData={formData}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                
+                <NgoFormCredentials 
+                  formData={formData}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                
+                <NgoFormAddress 
+                  formData={formData}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                
                 <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <Input 
-                      id="terms" 
-                      type="checkbox" 
-                      className={`w-4 h-4 ${errors.terms ? "border-destructive" : ""}`}
-                      checked={formData.terms}
-                      onChange={handleChange}
-                      required 
-                    />
-                    <Label htmlFor="terms" className={`ml-2 text-sm ${errors.terms ? "text-destructive" : ""}`}>
-                      I agree to the terms and conditions {errors.terms && <span className="text-xs">({errors.terms})</span>}
-                    </Label>
-                  </div>
-                  <div className="flex items-center">
-                    <Input 
-                      id="updates" 
-                      type="checkbox" 
-                      className="w-4 h-4"
-                      checked={formData.updates}
-                      onChange={handleChange}
-                    />
-                    <Label htmlFor="updates" className="ml-2 text-sm">
-                      Send me updates about available donations
-                    </Label>
-                  </div>
-                </div>
+                
+                <NgoFormAdditionalInfo 
+                  formData={formData}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Registering..." : "Register as NGO"}
