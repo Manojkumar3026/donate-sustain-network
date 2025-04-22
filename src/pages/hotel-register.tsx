@@ -27,7 +27,8 @@ const HotelRegister = () => {
     setLoading(true);
     
     try {
-      // Proceed with registration directly - Supabase will handle existing users
+      // Use Supabase's signUp method which will create the user and trigger the database function
+      // to create the profile entry
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
